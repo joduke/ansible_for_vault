@@ -2,9 +2,9 @@
 This is a place to experiment and share ideas for integrating Ansible and Vault.
 
 ## Working with this repo
-In VS Code, install the Ansble add-on.
+In VS Code, install the Ansible add-on.
 Set the language for the playbook/yaml files to "Ansible" rather than "yaml".
-Install ansible-dev-tools with `pip install ansible-dev-tools`.
+You may find it helpful to install ansible-dev-tools with `pip install ansible-dev-tools`.
 
 ## Reset local Administrator password on Windows host (break glass credential rotation)
 Vault can generate a password according to a password policy.
@@ -14,7 +14,6 @@ Ansible can connect to Vault and to the Windows remote machine.
 Ansible can reset the user's password.
 Ansible can change the expiration settings for a user's password.
 
-
 ### Prerequisites
 
 - Ansible needs an authentication mechanism for Vault, such as a token or a platform identity trust. A custom credential type may be created, if necessary. This credential will need to be rotated and updated in Ansible within its TTL.
@@ -23,19 +22,18 @@ Ansible can change the expiration settings for a user's password.
 - Ansible needs to have network connectivity to the remote machine on its standard auth/remote access port, which depends on the connection mechanism being used (SSH, WinRM, NTLM, RDP, etc).
 - Ansible needs to have network connectivity to Vault on its API port (default Vault API port is 8200).
 
-
-
 ### Proposed rotation sequence if Ansible uses/stores a different credential (such as domain admin)
 
 1. Ansible logs in to the remote machine with domain admin credential
 2. Verify current password matches:
+
     a. Ansible logs into Vault and queries current password.
 
     b. Ansible checks if current password on the remote machine matches the entry in Vault.
 
-    b. If the password does not match, alert.
-3. Ansible uses the Vault API or a Vault module to generate a password using a password policy. The password is returned to Ansible.
-4. Ansible uses the Vault API or makes an API call to Vault to write the password into an appropriate secrets engine. At this time, the best option is kv v2. In the future or for other types of credentials, there may be different secrets engines that support more streamlined workflows.
+    c. If the password does not match, alert.
+3. Ansible uses the Vault API or a HashiCorp Vault module to generate a password using a password policy. The password is returned to Ansible.
+4. Ansible uses a HashiCorp Vault module or makes an API call to Vault to write the password into an appropriate secrets engine. At this time, the best option is kv v2. In the future or for other types of credentials, there may be different secrets engines that support more streamlined workflows.
 5. With the password in memory, Ansible reaches out to the managed remote machine to do the following:
     a. Change the password for the local break glass Administrator account.
     b. Update account aging parameters (if needed)
