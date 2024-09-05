@@ -2,12 +2,12 @@
 ---
 - hosts: "{{ hosts }}"
   become: true
-  become_user: "{{ domain  }}"
+  become_user: "{{ ansible_domain_admin }}"
+  become_method: runas
   tasks:
 
 ## Turn this call into an Ansble task:
-## curl \
-##    --header "X-Vault-Token: ..." \
+## curl --header "X-Vault-Token: ..." \
 ##    http://127.0.0.1:8200/v1/sys/policies/password/my-policy/generate
 
   - name: Generate new user password in vault

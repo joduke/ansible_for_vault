@@ -7,12 +7,13 @@ Set the language for the playbook/yaml files to "Ansible" rather than "yaml".
 You may find it helpful to install ansible-dev-tools with `pip install ansible-dev-tools`.
 
 ## Reset local Administrator password on Windows host (break glass credential rotation)
-Vault can generate a password according to a password policy.
-Vault can set/track TTLs for passwords.
-Vault can audit who accesses a break glass secret, and when.
-Ansible can connect to Vault and to the Windows remote machine.
-Ansible can reset the user's password.
-Ansible can change the expiration settings for a user's password.
+* Vault can generate a password according to a password policy.
+* Vault can set/track TTLs for passwords.
+* Vault can audit who accesses a break glass secret, and when.
+
+* Ansible can connect to Vault and to the Windows remote machine.
+* Ansible can reset the user's password.
+* Ansible can change the expiration settings for a user's password.
 
 ### Prerequisites
 
