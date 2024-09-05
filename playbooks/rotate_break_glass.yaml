@@ -17,6 +17,10 @@
       headers:
         X-Vault-Token: "{{ vault_token }}" 
       register:  password_data
+      no_log: true
+
+## For a logging workaround see this answer here:
+## https://serverfault.com/a/960397
 
   - name: Parse password_data to find new_password
     ansible.builtin.debug:
