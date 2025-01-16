@@ -1,4 +1,5 @@
 ## This is a playbook to rotate break-glass local administrator passwords on Windows
+## TODO: Convert this to a role, and contribute to community.hashi_vault
 ---
 - hosts: "{{ hosts }}"
   become: true
@@ -35,30 +36,32 @@
   - name: Try to rotate break-glass password
     block: 
     - name: Set a password and an account expiration
-      ansible.windows.win_user:
-        name: Administrator
+      ansible.builtin.user:
+        name: '{{ break_glass_linux_user }}'
         state: present                        ## "present" will create or update the account. Use "query" to not make changes
         update_password: always               ## "always" will only change password if they differ
         password: '{{ password_data.data.password }}' ## It might be a different path in the API response. 
-        account_expires: '{{ vault_ttl | default(omit) }}' ## Don't set the expiration if the ttl is not defined.
-        user_cannot_change_password: true     ## Prevent password changes outside this workflow
+        expires: '{{ vault_ttl | default(omit) }}' ##TODO: add filter to convert to time in epoch. Don't set the expiration if the ttl is not defined. Set a negative integer to remove.
 
     rescue:
     - name: Do a task to attempt to rescue, if any previous step failed
       ansible.builtin.debug:
-        msg: "If this rescue succeeds, the rest of the play will run"
+        msg: |
+              "If this rescue succeeds, the rest of the play will run"
+              "If this rescue fails, the rest of the play will be aborted after the always"
 
     always:
     - name: Send all results to logging
       ansible.builtin.debug:
         msg: "This always executes, :-). Send the result somewhere useful."
-    - name: Send notifications if any tasks failed
-      slack:
-        token: '{{ slack_token }}'
-        msg: '{{ inventory_hostname }} failed to change Administrator break glass password'
-        channel: '#ansible-breakglass-rotations'
-        username: 'Ansible on {{ inventory_hostname }}'
-      delegate_to: localhost
+#    - name: Send notifications if any tasks failed
+#      slack:
+#        token: '{{ slack_token }}'
+#        msg: '{{ inventory_hostname }} failed to change Administrator break glass password'
+#        channel: '#ansible-breakglass-rotations'
+#        username: 'Ansible on {{ inventory_hostname }}'
+#      delegate_to: localhost
+#      when: 
 
 ## If any task failed in the block above, and if any task in its rescue failed, 
 ## the playbook will abort and not run more tasks.

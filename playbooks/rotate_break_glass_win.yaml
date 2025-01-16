@@ -1,0 +1,81 @@
+## This is a playbook to rotate break-glass local administrator passwords on Windows
+## TODO: Convert this to a role, and contribute to community.hashi_vault
+---
+- hosts: "{{ hosts }}"
+  become: true
+  become_user: "{{ ansible_domain_admin }}"
+  become_method: runas
+  tasks:
+
+## TODO: Add a task to read the password in vault.
+## TODO: Create a task flow to validate/compare the
+## password stored in Vault and the password set on endpoint.
+
+## Turn this call into an Ansble task:
+## curl --header "X-Vault-Token: ..." \
+##    http://127.0.0.1:8200/v1/sys/policies/password/my-policy/generate
+
+  - name: Generate new user password in vault
+    ansible.builtin.uri:
+      url: https://{{vault_cluster_address}}:8200/v1/sys/policies/password/my-policy/generate
+      method: GET
+      headers:
+        X-Vault-Token: "{{ vault_token }}" 
+      register:  password_data
+      no_log: true
+
+## For a logging workaround see this answer here:
+## https://serverfault.com/a/960397
+
+  - name: Parse password_data to find new_password
+    ansible.builtin.debug:
+      var: password_data      ## maybe at data.password? 
+
+## While it is tempting to use set_fact here to 
+## put the password in a shorter variable, it moves it 
+## from memory to a fact cache, which is undesirable 
+## from a threat model/security perspective. 
+## Hosts facts can be gathered in the AAP and displayed
+## to any user with access to the host.
+  - name: Try to rotate break-glass password
+    block: 
+    - name: Set a password and an account expiration
+      ansible.windows.win_user:
+        name: Administrator
+        state: present                        ## "present" will create or update the account. Use "query" to not make changes
+        update_password: always               ## "always" will only change password if they differ
+        password: '{{ password_data.data.password }}' ## It might be a different path in the API response. 
+        account_expires: '{{ vault_ttl | default(omit) }}' ## Don't set the expiration if the ttl is not defined.
+        user_cannot_change_password: true     ## Prevent password changes outside this workflow
+
+    rescue:
+    - name: Do a task to attempt to rescue, if any previous step failed
+      ansible.builtin.debug:
+        msg: |
+              "If this rescue succeeds, the rest of the play will run"
+              "If this rescue fails, the rest of the play will be aborted after the always"
+
+    always:
+    - name: Send all results to logging
+      ansible.builtin.debug:
+        msg: "This always executes, :-). Send the result somewhere useful."
+#    - name: Send notifications if any tasks failed
+#      slack:
+#        token: '{{ slack_token }}'
+#        msg: '{{ inventory_hostname }} failed to change Administrator break glass password'
+#        channel: '#ansible-breakglass-rotations'
+#        username: 'Ansible on {{ inventory_hostname }}'
+#      delegate_to: localhost
+#      when: 
+
+## If any task failed in the block above, and if any task in its rescue failed, 
+## the playbook will abort and not run more tasks.
+
+
+  - name: Write the new password to HashiCorp Vault kv v2 secrets engine, if the block succeeded
+    community.hashi_vault.vault_write:
+      url: https://{{vault_cluster_address}}:8200
+      path: 'secret/data/{{hostname}}'
+      data:
+        data:
+          password: '{{password_data.data.password}}'
