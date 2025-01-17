@@ -1,4 +1,4 @@
-## This is a playbook to rotate break-glass local administrator passwords on Windows
+## This is a playbook to rotate break-glass local administrator passwords on Linux
 ## TODO: Convert this to a role, and contribute to community.hashi_vault
 ---
 - hosts: "{{ hosts }}"
@@ -7,7 +7,11 @@
   become_method: sudo
   tasks:
 
-## Turn this call into an Ansble task:
+## TODO: Add a task to read the password in vault.
+## TODO: Create a task flow to validate/compare the
+## password stored in Vault and the password set on endpoint.
+
+## Turn this call into an Ansible task:
 ## curl --header "X-Vault-Token: ..." \
 ##    http://127.0.0.1:8200/v1/sys/policies/password/my-policy/generate
 
