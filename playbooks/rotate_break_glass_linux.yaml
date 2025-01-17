@@ -3,8 +3,8 @@
 ---
 - hosts: "{{ hosts }}"
   become: true
-  become_user: "{{ ansible_domain_admin }}"
-  become_method: runas
+  become_user: "{{ ansible_linux_domain_admin }}"
+  become_method: sudo
   tasks:
 
 ## Turn this call into an Ansble task:
@@ -23,9 +23,12 @@
 ## For a logging workaround see this answer here:
 ## https://serverfault.com/a/960397
 
-  - name: Parse password_data to find new_password
-    ansible.builtin.debug:
-      var: password_data      ## maybe at data.password
+## Only use this task to figure out where to find the data. 
+## It will print the password_data result from the earlier task.
+#  - name: Parse password_data to find new_password
+#    ansible.builtin.debug:
+#      var: password_data      ## maybe at data.password
+    
 
 ## While it is tempting to use set_fact here to 
 ## put the password in a shorter variable, it moves it 
@@ -54,6 +57,7 @@
     - name: Send all results to logging
       ansible.builtin.debug:
         msg: "This always executes, :-). Send the result somewhere useful."
+        
 #    - name: Send notifications if any tasks failed
 #      slack:
 #        token: '{{ slack_token }}'

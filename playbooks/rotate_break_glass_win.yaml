@@ -3,7 +3,7 @@
 ---
 - hosts: "{{ hosts }}"
   become: true
-  become_user: "{{ ansible_domain_admin }}"
+  become_user: "{{ ansible_windows_domain_admin }}"
   become_method: runas
   tasks:
 
@@ -21,27 +21,30 @@
       method: GET
       headers:
         X-Vault-Token: "{{ vault_token }}" 
-      register:  password_data
+      register: password_data
       no_log: true
 
 ## For a logging workaround see this answer here:
 ## https://serverfault.com/a/960397
 
-  - name: Parse password_data to find new_password
-    ansible.builtin.debug:
-      var: password_data      ## maybe at data.password? 
+## Only use this task to figure out where to find the data. 
+## It will print the password_data result from the earlier task.
+#  - name: Parse password_data to find new_password
+#    ansible.builtin.debug:
+#      var: password_data      ## maybe at data.password
 
+## Don't use set_fact
 ## While it is tempting to use set_fact here to 
 ## put the password in a shorter variable, it moves it 
 ## from memory to a fact cache, which is undesirable 
 ## from a threat model/security perspective. 
-## Hosts facts can be gathered in the AAP and displayed
+## Hosts facts are commonly gathered in the AAP and displayed
 ## to any user with access to the host.
   - name: Try to rotate break-glass password
     block: 
     - name: Set a password and an account expiration
       ansible.windows.win_user:
-        name: Administrator
+        name: '{{ break_glass_windows_user }}'
         state: present                        ## "present" will create or update the account. Use "query" to not make changes
         update_password: always               ## "always" will only change password if they differ
         password: '{{ password_data.data.password }}' ## It might be a different path in the API response. 
