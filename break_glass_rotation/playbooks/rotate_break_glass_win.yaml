@@ -50,7 +50,8 @@
         password: '{{ password_data.data.password }}' ## It might be a different path in the API response. 
         account_expires: '{{ vault_ttl | default(omit) }}' ## Don't set the expiration if the ttl is not defined.
         user_cannot_change_password: true     ## Prevent password changes outside this workflow
-
+        no_log: true
+        
     rescue:
     - name: Do a task to attempt to rescue, if any previous step failed
       ansible.builtin.debug:
@@ -82,3 +83,4 @@
       data:
         data:
           password: '{{password_data.data.password}}'
+      no_log: true
