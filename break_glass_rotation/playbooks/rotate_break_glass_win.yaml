@@ -10,6 +10,7 @@
 ## TODO: Add a task to read the password in vault.
 ## TODO: Create a task flow to validate/compare the
 ## password stored in Vault and the password set on endpoint.
+## TODO: Configure secure auth to Vault
 
 ## Turn this call into an Ansble task:
 ## curl --header "X-Vault-Token: ..." \
