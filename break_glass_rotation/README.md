@@ -38,8 +38,10 @@ You may find it helpful to install ansible-dev-tools with `pip install ansible-d
 3. Ansible uses the Vault API or a HashiCorp Vault module to generate a password using a password policy. The password is returned to Ansible.
 4. Ansible uses a HashiCorp Vault module or makes an API call to Vault to write the password into an appropriate secrets engine. At this time, the best option is kv v2. In the future or for other types of credentials, there may be different secrets engines that support more streamlined workflows.
 5. With the password in memory, Ansible reaches out to the managed remote machine to do the following:
-    a. Change the password for the local break glass Administrator account.
-    b. Update account aging parameters (if needed)
+
+   a. Change the password for the local break glass Administrator account.
+
+   b. Update account aging parameters (if needed)
 
 ### Threat model
 
